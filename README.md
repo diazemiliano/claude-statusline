@@ -14,6 +14,8 @@ Custom status line for [Claude Code](https://code.claude.com/docs/en/overview).
 Follow the white rabbit. ▌
 ```
 
+Use at your own risk. If your terminal catches fire, that was the Matrix all along.
+
 ## Lines
 
 1. **Model**: model, effort level, fast mode, thinking, agent, session name.
