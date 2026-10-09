@@ -78,6 +78,24 @@ if git -C "$cwd" rev-parse --git-dir > /dev/null 2>&1; then
 fi
 [ -z "$branch" ] && branch="$wt_branch"
 
+# GitHub base URL from origin (ssh or https). Empty for other hosts: branches then render as plain text.
+gh_base=""
+origin=$(git -C "$cwd" --no-optional-locks remote get-url origin 2>/dev/null)
+case "$origin" in
+  git@github.com:*)          gh_base="https://github.com/${origin#git@github.com:}" ;;
+  https://github.com/*)      gh_base="$origin" ;;
+esac
+gh_base="${gh_base%.git}"
+
+# link URL TEXT: OSC 8 hyperlink (Cmd/Ctrl+click in iTerm2, Kitty, WezTerm); plain text when no GitHub base.
+link() {
+  if [ -n "$gh_base" ]; then
+    printf '\033]8;;%s\033\\%s\033]8;;\033\\' "$1" "$2"
+  else
+    printf '%s' "$2"
+  fi
+}
+
 green=$(printf '\033[32m')
 yellow=$(printf '\033[33m')
 red=$(printf '\033[31m')
@@ -188,11 +206,11 @@ if [ -n "$branch" ]; then
   if [ -n "$git_add" ] || [ -n "$git_del" ]; then
     bp="${bp} ${dim}Δ${rs} ${green}+${git_add:-0}${rs} ${red}−${git_del:-0}${rs}"
   fi
-  g2="🌿 ${branch}${bp}"
+  g2="🌿 $(link "${gh_base}/tree/${branch}" "$branch")${bp}"
   [ -n "$repo" ] && g2="${dim}📁 ${repo}${rs}${sep}${g2}"
   if [ -n "$wt_name" ]; then
     wt="🌳 ${wt_name}"
-    [ -n "$wt_branch" ] && [ "$wt_branch" != "$branch" ] && wt="${wt} (${wt_branch})"
+    [ -n "$wt_branch" ] && [ "$wt_branch" != "$branch" ] && wt="${wt} ($(link "${gh_base}/tree/${wt_branch}" "$wt_branch"))"
     [ -n "$wt_orig" ] && wt="${wt} from ${wt_orig}"
     g2="${g2} ${dim}${wt}${rs}"
   fi
